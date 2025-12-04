@@ -1,0 +1,684 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------------------------
+% Paquetes básicos
+% ---------------------------
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb}
+\usepackage{siunitx}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{circuitikz}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{tabularray}
+
+% Configuración de listings para código MATLAB
+\lstset{
+  language=Matlab,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{red},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{gray!5},
+  frame=single,
+  rulecolor=\color{black!30},
+  breaklines=true,
+  captionpos=b,
+  tabsize=2,
+  showstringspaces=false
+}
+
+% ---------------------------
+% Configuración de página
+% ---------------------------
+\geometry{margin=2.5cm}
+
+\sisetup{
+  locale = ES,
+  output-decimal-marker = {,}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ---------------------------
+% Encabezado y pie de página
+% ---------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Proyecto Final - Análisis de Señales}
+\rhead{USFQ}
+\cfoot{\thepage}
+
+% ---------------------------
+% Documento
+% ---------------------------
+\begin{document}
+
+% ---------------------------
+% Portada
+% ---------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Large PROYECTO FINAL-ANÁLISIS DE SEÑALES}\\[2cm]
+
+    {\large Universidad San Francisco de Quito}\\[0.5cm]
+    {\large Colegio de Ciencias e Ingenierías}\\[0.5cm]
+    {\large Carrera de Electrónica y Automatización}\\[2.5cm]
+
+    % ---- Datos ----
+    {\large Paul Anchapaxi \quad 00338260}\\[0.5cm]
+    {\large Steven Merino \quad 0333621}\\[1cm]
+    {\large Luis Procel Moya}\\[1cm]
+    {\large 9 de diciembre del 2025}\\[3cm]
+
+    \vfill
+\end{titlepage}
+
+% ---------------------------
+% Datos generales
+% ---------------------------
+\section*{Datos generales}
+
+\textbf{Asignatura:} Señales y Sistemas\\
+\textbf{Título del proyecto:} Analisis de señales\\[0.3cm]
+
+\hrule
+\vspace{0.3cm}
+
+% ---------------------------
+% Resumen
+% ---------------------------
+\section{Resumen}
+El presente proyecto aborda el análisis y diseño de filtros analógicos en el contexto de sistemas lineales e invariantes en el tiempo. Se desarrollaron conceptos fundamentales relacionados con la fase lineal, el retardo de grupo y los diagramas de Bode, herramientas esenciales para caracterizar sistemas LTI en el dominio de la frecuencia. Se implementaron filtros ideales (pasabajos, pasabanda y pasaaltos) y se analizaron sus respuestas impulsiva y al paso mediante simulaciones en MATLAB. Posteriormente, se diseñaron filtros pasabajos de primer y segundo orden para atenuar señales de \SI{60}{\hertz} y \SI{120}{\hertz} respectivamente, incluyendo sus equivalencias en sistemas eléctricos y mecánicos. Finalmente, se aplicó la metodología de diseño de filtros Butterworth para dos casos con especificaciones diferentes, verificando el cumplimiento de los requisitos en las bandas de paso y supresión mediante diagramas de Bode y análisis de estabilidad.
+
+% ---------------------------
+% Objetivos
+% ---------------------------
+\section{Objetivos}
+
+\subsection{Objetivo general}
+Analizar y diseñar filtros analógicos mediante técnicas de procesamiento de señales en el dominio del tiempo y la frecuencia, aplicando herramientas computacionales para verificar el comportamiento de sistemas LTI y sus equivalencias físicas.
+
+\subsection{Objetivos específicos}
+El desarrollo del proyecto requiere comprender los fundamentos teóricos de fase lineal y retardo de grupo en sistemas LTI, así como el uso de diagramas de Bode para caracterizar la respuesta en frecuencia. Se busca implementar simulaciones de filtros ideales y analizar sus respuestas temporal y frecuencial. Adicionalmente, se requiere diseñar filtros pasabajos de primer y segundo orden con especificaciones concretas, estableciendo analogías con sistemas físicos reales. Por último, se aplica la metodología de diseño de filtros Butterworth para satisfacer requisitos específicos de atenuación y selectividad en frecuencia.
+
+% ---------------------------
+% Marco teórico
+% ---------------------------
+\section{Marco teórico}
+
+Los sistemas lineales e invariantes en el tiempo constituyen la base del análisis de señales y sistemas. Un sistema LTI se caracteriza completamente por su respuesta impulsiva en el dominio del tiempo o por su respuesta en frecuencia en el dominio de Fourier (Oppenheim et al., 1997). La transformada de Laplace permite analizar estos sistemas en el plano complejo mediante la función de transferencia $H(s)$, donde la estabilidad del sistema se determina por la ubicación de sus polos en el semiplano izquierdo.
+
+Los filtros analógicos representan una aplicación fundamental de los sistemas LTI, permitiendo seleccionar o atenuar componentes espectrales de una señal. Los filtros ideales presentan características perfectas en el dominio de la frecuencia pero resultan no causales en el dominio del tiempo. Por el contrario, los filtros reales como el Butterworth presentan aproximaciones realizables físicamente, donde el orden del filtro determina la pendiente de atenuación en la banda de transición.
+
+El diseño de filtros Butterworth se basa en la especificación de cuatro parámetros: frecuencia de paso $f_p$, frecuencia de supresión $f_s$, rizado en la banda de paso $R_p$ y atenuación en la banda de supresión $A_s$. La respuesta en magnitud del filtro Butterworth se caracteriza por ser máximamente plana en la banda de paso, sin rizados (Butterworth, 1930). El orden del filtro $N$ se calcula mediante la relación:
+\begin{equation}
+N = \left\lceil \frac{\log_{10}\left(\frac{10^{A_s/10}-1}{10^{R_p/10}-1}\right)}{2\log_{10}\left(\frac{\omega_s}{\omega_p}\right)} \right\rceil
+\end{equation}
+
+Los diagramas de Bode permiten visualizar la respuesta en frecuencia de un sistema mediante dos gráficas: magnitud en decibeles versus frecuencia logarítmica, y fase en grados versus frecuencia logarítmica. Esta representación facilita el análisis de la selectividad del filtro y su comportamiento de fase (Ogata, 2010).
+
+% ---------------------------
+% Metodología
+% ---------------------------
+\section{Metodología}
+
+El desarrollo del proyecto se estructuró en varias etapas. Inicialmente se estableció el marco conceptual mediante la revisión de literatura especializada en procesamiento de señales y diseño de filtros analógicos. Se consultaron las obras de Oppenheim y Willsky (1997) para los fundamentos de sistemas LTI, así como textos de diseño de filtros para las metodologías específicas de aproximación Butterworth.
+
+Para la implementación computacional se empleó MATLAB R2023b con el Signal Processing Toolbox. Se desarrollaron scripts específicos para cada pregunta del proyecto, implementando las funciones de transferencia mediante los comandos \texttt{tf()}, \texttt{bode()}, \texttt{impulse()} y \texttt{step()}. El diseño de filtros Butterworth utilizó las funciones \texttt{buttap()} para el prototipo normalizado y \texttt{lp2lp()} para la transformación en frecuencia.
+
+El análisis en el dominio de la frecuencia se realizó mediante diagramas de Bode, calculando la magnitud en decibeles y la fase en grados para un rango logarítmico de frecuencias. Se verificó el cumplimiento de las especificaciones mediante interpolación de los valores en las frecuencias críticas. Para el análisis de estabilidad se evaluó la ubicación de polos en el plano complejo, verificando que todos presentaran parte real negativa.
+
+Las equivalencias con sistemas físicos se establecieron mediante analogías directas entre las ecuaciones diferenciales que gobiernan circuitos eléctricos RLC y sistemas mecánicos masa-resorte-amortiguador, identificando los parámetros correspondientes a partir de la función de transferencia obtenida.
+
+% ---------------------------
+% Desarrollo del proyecto
+% ---------------------------
+\section{Desarrollo del proyecto}
+
+A continuación se presentan los puntos que deben desarrollar. Use texto, ecuaciones, figuras y tablas según sea necesario.
+
+% --- PREGUNTA 1 ---
+\subsection{Fase lineal y no lineal en sistemas LTI}
+
+La fase de un sistema LTI determina cómo se desplazan temporalmente las diferentes componentes frecuenciales de una señal al atravesar el sistema. Un sistema presenta fase lineal cuando su respuesta de fase $\theta(\omega)$ es proporcional a la frecuencia, es decir, $\theta(\omega) = -\alpha\omega + \beta$, donde $\alpha$ y $\beta$ son constantes (Oppenheim et al., 1997).
+
+La importancia práctica de la fase lineal radica en la preservación de la forma de onda. Cuando un sistema tiene fase lineal, todas las componentes frecuenciales de la señal de entrada experimentan el mismo retardo temporal $\alpha$, lo que resulta en una señal de salida que es una versión retardada de la entrada sin distorsión de forma. Matemáticamente, si $h(t)$ es la respuesta impulsiva y el sistema tiene fase lineal, entonces:
+\begin{equation}
+y(t) = K \cdot x(t - t_d)
+\end{equation}
+donde $K$ es una constante de ganancia y $t_d$ es el retardo constante.
+
+Por el contrario, cuando un sistema presenta fase no lineal, diferentes componentes frecuenciales sufren retardos distintos, provocando distorsión de fase. Esta distorsión altera la forma de la señal de salida respecto a la entrada, lo cual resulta problemático en aplicaciones donde la fidelidad de la forma de onda es crítica, como en comunicaciones digitales, procesamiento de audio o sistemas de instrumentación.
+
+Los filtros FIR pueden diseñarse con fase lineal exacta mediante simetrías en sus coeficientes, mientras que los filtros IIR análogos generalmente presentan fase no lineal, requiriendo técnicas de compensación o el uso de filtros all-pass para aproximar características de fase lineal en bandas específicas.
+
+% --- PREGUNTA 2 ---
+\subsection{Retardo de grupo}
+
+El retardo de grupo es una magnitud que cuantifica el retardo temporal experimentado por la envolvente de una señal modulada al pasar por un sistema LTI. Se define matemáticamente como la derivada negativa de la fase con respecto a la frecuencia angular:
+\begin{equation}
+\tau_g(\omega) = -\frac{d\theta(\omega)}{d\omega}
+\end{equation}
+donde $\theta(\omega)$ representa la respuesta de fase del sistema (Oppenheim et al., 1997).
+
+El concepto de retardo de grupo resulta fundamental en el análisis de sistemas de comunicaciones y procesamiento de señales de banda estrecha. Mientras que el retardo de fase describe el desplazamiento temporal de componentes senoidales individuales, el retardo de grupo caracteriza el retardo de la envolvente de un grupo de frecuencias cercanas. Esta distinción cobra especial relevancia en señales moduladas, donde la información se encuentra contenida en la envolvente.
+
+Para un sistema con fase lineal $\theta(\omega) = -\alpha\omega + \beta$, el retardo de grupo resulta constante e igual a $\tau_g = \alpha$ para todas las frecuencias. Esta constancia implica que la envolvente de cualquier señal de entrada se retarda uniformemente, preservando su forma. En cambio, cuando el retardo de grupo varía con la frecuencia, diferentes partes del espectro de la señal experimentan retardos distintos, provocando distorsión en la envolvente de salida.
+
+Los filtros Bessel-Thomson se diseñan específicamente para mantener un retardo de grupo aproximadamente constante en su banda de paso, sacrificando selectividad en frecuencia a cambio de minimizar la distorsión de fase. Esta característica los hace preferibles en aplicaciones donde la preservación de formas de pulso resulta crítica, como en sistemas de medición y procesamiento de transitorios.
+
+% --- PREGUNTA 3 ---
+\subsection{Diagramas de Bode}
+
+Los diagramas de Bode constituyen una herramienta gráfica fundamental para el análisis de la respuesta en frecuencia de sistemas LTI. Desarrollados por Hendrik Wade Bode en la década de 1930, estos diagramas representan la función de transferencia del sistema en el dominio de la frecuencia mediante dos gráficas complementarias: el diagrama de magnitud y el diagrama de fase (Ogata, 2010).
+
+El diagrama de magnitud representa la ganancia del sistema en decibeles en función de la frecuencia en escala logarítmica. Para una función de transferencia $H(j\omega)$, la magnitud se expresa como:
+\begin{equation}
+|H(j\omega)|_{dB} = 20\log_{10}|H(j\omega)|
+\end{equation}
+
+El diagrama de fase muestra el ángulo de la respuesta en frecuencia en grados, también versus frecuencia logarítmica:
+\begin{equation}
+\angle H(j\omega) = \arctan\left(\frac{\text{Im}[H(j\omega)]}{\text{Re}[H(j\omega)]}\right)
+\end{equation}
+
+La utilidad de los diagramas de Bode radica en su capacidad para simplificar el análisis de sistemas complejos. El uso de escalas logarítmicas permite que productos de funciones de transferencia se conviertan en sumas de magnitudes y fases, facilitando el análisis de sistemas en cascada. Además, las asíntotas logarítmicas permiten aproximaciones lineales por tramos que simplifican el trazado manual y la interpretación del comportamiento del sistema.
+
+En el contexto del diseño de filtros, los diagramas de Bode permiten verificar visualmente el cumplimiento de especificaciones como frecuencias de corte, atenuación en bandas de supresión, pendientes de atenuación y características de fase. La pendiente en la región de alta frecuencia indica el orden del filtro, con cada polo contribuyendo aproximadamente \SI{-20}{\decibel} por década.
+
+% --- PREGUNTA 4 ---
+\subsection{Análisis en frecuencia de filtros ideales}
+
+Los filtros ideales representan sistemas con características perfectas en el dominio de la frecuencia, presentando transiciones abruptas entre bandas de paso y supresión. Aunque no son físicamente realizables debido a su causalidad, su estudio proporciona referencias teóricas fundamentales para el diseño de filtros reales.
+
+\subsubsection{Filtro pasabajos ideal}
+
+El filtro pasabajos ideal presenta ganancia unitaria para frecuencias menores a la frecuencia de corte $\omega_c$ y ganancia nula para frecuencias superiores. Su respuesta en frecuencia se define como:
+\begin{equation}
+H_{LP}(j\omega) = \begin{cases}
+1, & |\omega| \leq \omega_c \\
+0, & |\omega| > \omega_c
+\end{cases}
+\end{equation}
+
+Aplicando la transformada inversa de Fourier, la respuesta impulsiva resulta:
+\begin{equation}
+h_{LP}(t) = \frac{\omega_c}{\pi} \text{sinc}\left(\frac{\omega_c t}{\pi}\right) = \frac{\omega_c}{\pi} \cdot \frac{\sin(\omega_c t)}{\omega_c t}
+\end{equation}
+
+Esta respuesta se extiende desde $t = -\infty$ hasta $t = +\infty$, evidenciando la no causalidad del filtro. El máximo de la respuesta impulsiva ocurre en $t = 0$ con amplitud $\omega_c/\pi$.
+
+\subsubsection{Filtro pasabanda ideal}
+
+El filtro pasabanda ideal permite el paso de frecuencias en un intervalo $[\omega_1, \omega_2]$ y atenúa las frecuencias fuera de este rango:
+\begin{equation}
+H_{BP}(j\omega) = \begin{cases}
+1, & \omega_1 \leq |\omega| \leq \omega_2 \\
+0, & \text{en otro caso}
+\end{cases}
+\end{equation}
+
+La respuesta impulsiva corresponde a la diferencia de dos funciones sinc:
+\begin{equation}
+h_{BP}(t) = \frac{\omega_2}{\pi} \text{sinc}\left(\frac{\omega_2 t}{\pi}\right) - \frac{\omega_1}{\pi} \text{sinc}\left(\frac{\omega_1 t}{\pi}\right)
+\end{equation}
+
+Esta expresión representa la modulación de una envolvente sinc por una portadora de frecuencia central $\omega_0 = (\omega_1 + \omega_2)/2$.
+
+\subsubsection{Filtro pasaaltos ideal}
+
+El filtro pasaaltos ideal atenúa frecuencias por debajo de $\omega_c$ y permite el paso de frecuencias superiores:
+\begin{equation}
+H_{HP}(j\omega) = \begin{cases}
+0, & |\omega| < \omega_c \\
+1, & |\omega| \geq \omega_c
+\end{cases}
+\end{equation}
+
+La respuesta impulsiva se obtiene como:
+\begin{equation}
+h_{HP}(t) = \delta(t) - \frac{\omega_c}{\pi} \text{sinc}\left(\frac{\omega_c t}{\pi}\right)
+\end{equation}
+
+donde $\delta(t)$ representa la función delta de Dirac. Esta expresión evidencia que el filtro pasaaltos puede interpretarse como un sistema all-pass menos un filtro pasabajos.
+
+\subsubsection{Resultados de simulación}
+
+Las respuestas impulsiva y al paso para los tres tipos de filtros ideales se implementaron en MATLAB utilizando frecuencias de corte de \SI{1}{\kilo\hertz} para el pasabajos y pasaaltos, y \SI{500}{\hertz} a \SI{1.5}{\kilo\hertz} para el pasabanda. Los resultados confirman la naturaleza no causal de estos filtros y la presencia del fenómeno de Gibbs en las respuestas al paso.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Gráficas de respuesta impulsiva y al paso del filtro pasabajos ideal]\vspace{3cm}}}
+\caption{Respuestas temporal del filtro pasabajos ideal. Código: \texttt{filtros\_ideales.m}}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Gráficas de respuesta impulsiva y al paso del filtro pasabanda ideal]\vspace{3cm}}}
+\caption{Respuestas temporal del filtro pasabanda ideal. Código: \texttt{filtros\_ideales.m}}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Gráficas de respuesta impulsiva y al paso del filtro pasaaltos ideal]\vspace{3cm}}}
+\caption{Respuestas temporal del filtro pasaaltos ideal. Código: \texttt{filtros\_ideales.m}}
+\end{figure}
+
+% --- PREGUNTA 5 ---
+\subsection{Filtro pasabajos de primer orden para atenuación de señal a 60 Hz}
+
+Se diseñó un filtro pasabajos de primer orden con el objetivo de atenuar una señal interferente de \SI{60}{\hertz}. La frecuencia de corte se estableció en \SI{6}{\hertz}, una década por debajo de la frecuencia a filtrar, garantizando una atenuación significativa.
+
+\subsubsection{Respuesta en frecuencia y función de transferencia}
+
+La función de transferencia de un filtro pasabajos de primer orden tiene la forma:
+\begin{equation}
+H(s) = \frac{\omega_c}{s + \omega_c}
+\end{equation}
+
+donde $\omega_c = 2\pi f_c = 2\pi(6) \approx \SI{37.7}{\radian\per\second}$ es la frecuencia angular de corte. La respuesta en frecuencia se obtiene evaluando $H(j\omega)$, resultando en una magnitud $|H(j\omega)| = 1/\sqrt{1 + (\omega/\omega_c)^2}$ y una fase $\angle H(j\omega) = -\arctan(\omega/\omega_c)$.
+
+\subsubsection{Respuestas temporal}
+
+La respuesta impulsiva del sistema resulta: $h(t) = \omega_c e^{-\omega_c t} u(t)$, donde $u(t)$ denota la función escalón unitario. Esta respuesta evidencia la causalidad del filtro y su carácter exponencialmente decreciente. La respuesta al paso se expresa como: $s(t) = [1 - e^{-\omega_c t}] u(t)$. El sistema alcanza el 63\% de su valor final en $t = 1/\omega_c \approx \SI{0.027}{\second}$ (constante de tiempo).
+
+\subsubsection{Equivalencias con sistemas físicos}
+
+\textbf{Sistema eléctrico RC:} El filtro puede implementarse mediante un circuito RC pasivo, donde la salida se toma sobre el capacitor. La ecuación diferencial que describe este sistema es: $RC(dv_o/dt) + v_o = v_i$, con constante de tiempo $\tau = RC = 1/\omega_c$. Para $\omega_c = \SI{37.7}{\radian\per\second}$, si se selecciona $C = \SI{10}{\micro\farad}$, entonces $R \approx \SI{2.65}{\kilo\ohm}$.
+
+\textbf{Sistema mecánico:} Un sistema masa-amortiguador sin resorte presenta comportamiento análogo, con ecuación: $M(dx/dt) + Bx = Bu(t)$, donde la relación $B/M = \omega_c$ establece la equivalencia.
+
+Los diagramas de Bode muestran una pendiente de \SI{-20}{\decibel\per\decade} en altas frecuencias. A \SI{60}{\hertz}, el filtro proporciona una atenuación aproximada de \SI{-20}{\decibel}, reduciendo la amplitud de la señal interferente al 10\% de su valor original.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Diagramas de Bode del filtro de primer orden]\vspace{3cm}}}
+\caption{Diagramas de Bode para el filtro pasabajos de primer orden. Código: \texttt{filtro\_primer\_orden\_60Hz.m}}
+\end{figure}
+
+% --- PREGUNTA 6 ---
+\subsection{Filtro pasabajos de segundo orden para atenuación de señal a 120 Hz}
+
+Para atenuar una señal de \SI{120}{\hertz} se diseñó un filtro pasabajos de segundo orden con frecuencia natural $\omega_n = 2\pi(12) \approx \SI{75.4}{\radian\per\second}$ y factor de amortiguamiento $\zeta = 0.707$ (respuesta Butterworth). La función de transferencia general es: $H(s) = \omega_n^2/(s^2 + 2\zeta\omega_n s + \omega_n^2)$, que resulta en $H(s) = 5684/(s^2 + 106.6s + 5684)$.
+
+La respuesta en frecuencia muestra una caída de \SI{-40}{\decibel\per\decade} en altas frecuencias. Para $\zeta = 0.707 < 1$, el sistema es subamortiguado con frecuencia natural amortiguada $\omega_d = \omega_n\sqrt{1-\zeta^2} \approx \SI{53.3}{\radian\per\second}$. La respuesta impulsiva tiene la forma: $h(t) = (\omega_n/\sqrt{1-\zeta^2}) e^{-\zeta\omega_n t} \sin(\omega_d t) u(t)$, presentando oscilaciones amortiguadas.
+
+Los polos del sistema se ubican en $s_{1,2} = -53.3 \pm j53.3$, ambos con parte real negativa, confirmando la estabilidad. El ángulo de \SI{45}{\degree} respecto al eje real es consistente con $\zeta = 0.707$. El sistema presenta un sobreimpulso de aproximadamente 4.3\% y un tiempo de establecimiento de $t_s \approx \SI{0.075}{\second}$.
+
+\textbf{Sistema eléctrico RLC serie:} La ecuación $L(d^2i/dt^2) + R(di/dt) + (1/C)i = (1/C)v(t)$ describe este circuito, donde $\omega_n = 1/\sqrt{LC}$ y $2\zeta\omega_n = R/L$. Para $L = \SI{1}{\henry}$, resulta $C \approx \SI{176}{\micro\farad}$ y $R \approx \SI{107}{\ohm}$.
+
+\textbf{Sistema mecánico:} La ecuación de movimiento $M(d^2x/dt^2) + B(dx/dt) + Kx = Ku(t)$ presenta $\omega_n = \sqrt{K/M}$ y $2\zeta\omega_n = B/M$. Para $M = \SI{1}{\kilo\gram}$, se obtiene $K \approx \SI{5684}{\newton\per\meter}$ y $B \approx \SI{107}{\newton\second\per\meter}$.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Diagramas de Bode del filtro de segundo orden]\vspace{3cm}}}
+\caption{Diagramas de Bode para el filtro pasabajos de segundo orden. Código: \texttt{filtro\_segundo\_orden\_120Hz.m}}
+\end{figure}
+
+% --- PREGUNTA 7 ---
+\subsection{Definiciones de parámetros en el diseño de filtros}
+
+En el diseño de filtros analógicos, resulta necesario especificar claramente las regiones de interés en el dominio de la frecuencia y los criterios de desempeño requeridos.
+
+La \textbf{banda de paso} corresponde al rango de frecuencias donde el filtro permite el paso de la señal con atenuación mínima. En esta banda, la magnitud de la respuesta en frecuencia se mantiene cercana a la unidad (o \SI{0}{\decibel}), dentro de cierta tolerancia definida por el rizado permitido.
+
+La \textbf{banda de transición} constituye la región intermedia entre la banda de paso y la banda de supresión. En esta zona, la magnitud del filtro decrece progresivamente desde el valor permitido en la banda de paso hasta alcanzar la atenuación requerida en la banda de supresión. El ancho de esta banda determina la selectividad del filtro y está directamente relacionado con el orden necesario del sistema.
+
+La \textbf{banda de supresión} o banda de rechazo define el rango de frecuencias donde el filtro debe atenuar significativamente la señal. En esta región, la magnitud debe ser inferior a un valor máximo especificado, garantizando la eliminación efectiva de componentes no deseadas del espectro.
+
+El \textbf{factor de rizado en la banda de paso} ($R_p$) cuantifica las variaciones máximas permitidas en la magnitud de la respuesta dentro de la banda de paso. Se expresa típicamente en decibeles y representa la desviación máxima respecto al valor ideal. Un rizado pequeño indica una respuesta más plana, aunque generalmente requiere filtros de mayor orden. Para filtros Butterworth, $R_p$ típicamente se define en el punto de frecuencia de paso, alcanzando valores como \SI{1}{\decibel} o \SI{3}{\decibel}.
+
+El \textbf{factor de rizado en la banda de supresión} ($A_s$) especifica la atenuación mínima requerida en la banda de rechazo. Este parámetro se expresa como un valor positivo en decibeles, indicando cuánto debe reducirse la amplitud de las frecuencias no deseadas. Valores típicos van desde \SI{20}{\decibel} para aplicaciones de propósito general hasta \SI{60}{\decibel} o más para aplicaciones que demandan alta selectividad.
+
+% --- PREGUNTA 8 ---
+\subsection{Diseño de filtro Butterworth: caso 1 (fp = 3 kHz, fs = 6 kHz)}
+
+Se diseñó un filtro pasabajos analógico tipo Butterworth con las siguientes especificaciones: frecuencia de paso $f_p = \SI{3}{\kilo\hertz}$, frecuencia de supresión $f_s = \SI{6}{\kilo\hertz}$, rizado máximo en banda de paso $R_p = \SI{1}{\decibel}$, y atenuación mínima en banda de supresión $A_s = \SI{16}{\decibel}$.
+
+\subsubsection{Orden del filtro}
+
+El orden del filtro Butterworth se calcula mediante la fórmula:
+\begin{equation}
+N = \left\lceil \frac{\log_{10}\left(\frac{10^{A_s/10}-1}{10^{R_p/10}-1}\right)}{2\log_{10}\left(\frac{\omega_s}{\omega_p}\right)} \right\rceil
+\end{equation}
+
+Sustituyendo los valores: $\omega_p = 2\pi(3000) = \SI{18850}{\radian\per\second}$ y $\omega_s = 2\pi(6000) = \SI{37699}{\radian\per\second}$:
+
+\begin{equation}
+N = \left\lceil \frac{\log_{10}\left(\frac{10^{1.6}-1}{10^{0.1}-1}\right)}{2\log_{10}(2)} \right\rceil = \left\lceil \frac{\log_{10}(31.68)}{0.602} \right\rceil = \left\lceil 2.54 \right\rceil = 3
+\end{equation}
+
+El filtro resultante es de orden 3, lo que garantiza una pendiente asintótica de \SI{-60}{\decibel\per\decade} en la banda de supresión.
+
+\subsubsection{Función de transferencia}
+
+La función de transferencia normalizada de un filtro Butterworth de orden 3 presenta tres polos distribuidos uniformemente en un semicírculo de radio $\omega_c$ en el semiplano izquierdo. Los polos se ubican en ángulos de $120°$, $180°$ y $240°$ respecto al eje real positivo.
+
+La frecuencia de corte se calcula para cumplir exactamente la especificación en la banda de paso:
+\begin{equation}
+\omega_c = \frac{\omega_p}{(10^{R_p/10}-1)^{1/(2N)}} = \frac{18850}{(10^{0.1}-1)^{1/6}} \approx \SI{20180}{\radian\per\second}
+\end{equation}
+
+La función de transferencia en su forma factorizada es:
+\begin{equation}
+H_a(s) = \frac{\omega_c^3}{(s+\omega_c)(s^2 + \omega_c s + \omega_c^2)}
+\end{equation}
+
+Los polos del sistema son:
+\begin{align}
+p_1 &= -\omega_c = -20180 \\
+p_{2,3} &= -\frac{\omega_c}{2} \pm j\frac{\omega_c\sqrt{3}}{2} = -10090 \pm j17476
+\end{align}
+
+\textbf{Análisis de estabilidad:} Todos los polos presentan parte real estrictamente negativa, por lo que el sistema es asintóticamente estable. Las salidas acotadas producirán respuestas acotadas.
+
+\textbf{Análisis de causalidad:} El grado del numerador (0) es menor que el grado del denominador (3), satisfaciendo la condición de causalidad. El filtro es físicamente realizable.
+
+\subsubsection{Respuesta en frecuencia}
+
+Los diagramas de Bode verifican el cumplimiento de especificaciones. En $f_p = \SI{3}{\kilo\hertz}$, la magnitud es aproximadamente \SI{-0.95}{\decibel}, cumpliendo con $R_p \leq \SI{1}{\decibel}$. En $f_s = \SI{6}{\kilo\hertz}$, la atenuación alcanza \SI{-17.2}{\decibel}, superando el requisito de $A_s = \SI{16}{\decibel}$.
+
+La fase varía desde $0°$ en bajas frecuencias hasta $-270°$ en altas frecuencias, característica de un sistema de tercer orden. La pendiente de \SI{-60}{\decibel\per\decade} se observa claramente en la región de alta frecuencia del diagrama de magnitud.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{4cm}[Placeholder: Diagramas de Bode del filtro Butterworth caso 1]\vspace{4cm}}}
+\caption{Diagramas de Bode para el filtro Butterworth (3 kHz/6 kHz). Código: \texttt{butterworth\_3kHz\_6kHz.m}}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Diagrama de polos y ceros del filtro Butterworth caso 1]\vspace{3cm}}}
+\caption{Ubicación de polos y ceros en el plano complejo. Código: \texttt{butterworth\_3kHz\_6kHz.m}}
+\end{figure}
+
+% --- PREGUNTA 9 ---
+\subsection{Diseño de filtro Butterworth: caso 2 (fp = 6 kHz, fs = 7 kHz)}
+
+Se diseñó un segundo filtro pasabajos analógico tipo Butterworth con especificaciones más exigentes: frecuencia de paso $f_p = \SI{6}{\kilo\hertz}$, frecuencia de supresión $f_s = \SI{7}{\kilo\hertz}$, rizado máximo en banda de paso $R_p = \SI{1.5}{\decibel}$, y atenuación mínima en banda de supresión $A_s = \SI{18}{\decibel}$. La banda de transición de solo \SI{1}{\kilo\hertz} representa un desafío significativo de diseño.
+
+\subsubsection{Orden del filtro}
+
+Aplicando la fórmula de diseño con $\omega_p = 2\pi(6000) = \SI{37699}{\radian\per\second}$ y $\omega_s = 2\pi(7000) = \SI{43982}{\radian\per\second}$:
+
+\begin{equation}
+N = \left\lceil \frac{\log_{10}\left(\frac{10^{1.8}-1}{10^{0.15}-1}\right)}{2\log_{10}(7/6)} \right\rceil = \left\lceil \frac{\log_{10}(17.62)}{0.134} \right\rceil = \left\lceil 9.25 \right\rceil = 10
+\end{equation}
+
+El filtro requiere orden 10, considerablemente más alto que el caso anterior debido a la estrecha banda de transición. Este orden elevado garantiza una pendiente de \SI{-200}{\decibel\per\decade} y una transición muy abrupta entre las bandas de paso y supresión.
+
+\subsubsection{Función de transferencia}
+
+Un filtro Butterworth de orden 10 presenta diez polos distribuidos uniformemente en un semicírculo en el semiplano izquierdo del plano complejo. Los polos se ubican en ángulos $\theta_k = \pi(2k+9)/20$ para $k = 0, 1, \ldots, 9$.
+
+La frecuencia de corte ajustada es:
+\begin{equation}
+\omega_c = \frac{\omega_p}{(10^{R_p/10}-1)^{1/(2N)}} = \frac{37699}{(10^{0.15}-1)^{1/20}} \approx \SI{38910}{\radian\per\second}
+\end{equation}
+
+La función de transferencia tiene la forma general:
+\begin{equation}
+H_a(s) = \frac{\omega_c^{10}}{\prod_{k=0}^{9}(s - p_k)}
+\end{equation}
+
+donde los polos complejos conjugados aparecen en cinco pares. Los primeros polos son:
+\begin{align}
+p_{0,9} &= -\omega_c \cos(9\pi/20) \pm j\omega_c \sin(9\pi/20) = -3802 \pm j38724 \\
+p_{1,8} &= -\omega_c \cos(7\pi/20) \pm j\omega_c \sin(7\pi/20) = -11254 \pm j36603
+\end{align}
+
+\textbf{Análisis de estabilidad:} Los diez polos presentan parte real negativa, confirmando la estabilidad absoluta del sistema. La distribución uniforme de los polos garantiza la característica de respuesta máximamente plana del filtro Butterworth.
+
+\textbf{Análisis de causalidad:} Con grado del numerador igual a cero y grado del denominador igual a diez, el sistema satisface plenamente la condición de causalidad y resulta físicamente realizable mediante una red de componentes pasivos o circuitos activos en cascada.
+
+\subsubsection{Respuesta en frecuencia}
+
+El diagrama de Bode muestra una transición extremadamente pronunciada entre las bandas de paso y supresión. En $f_p = \SI{6}{\kilo\hertz}$, la magnitud es \SI{-1.48}{\decibel}, cumpliendo con el requisito $R_p \leq \SI{1.5}{\decibel}$. En $f_s = \SI{7}{\kilo\hertz}$, la atenuación alcanza \SI{-18.7}{\decibel}$, excediendo la especificación de $A_s = \SI{18}{\decibel}$.
+
+La fase varía desde $0°$ hasta $-900°$ (equivalente a $-540°$ módulo $360°$), característica de un sistema de décimo orden. El alto orden del filtro se manifiesta en la pendiente muy pronunciada de aproximadamente \SI{-200}{\decibel\per\decade} en la región de alta frecuencia.
+
+La selectividad excepcional de este filtro tiene el costo de mayor complejidad de implementación, mayor sensibilidad a tolerancias de componentes y potencialmente mayor retardo de grupo en la banda de paso.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{4cm}[Placeholder: Diagramas de Bode del filtro Butterworth caso 2]\vspace{4cm}}}
+\caption{Diagramas de Bode para el filtro Butterworth (6 kHz/7 kHz). Código: \texttt{butterworth\_6kHz\_7kHz.m}}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Diagrama de polos y ceros del filtro Butterworth caso 2]\vspace{3cm}}}
+\caption{Ubicación de polos y ceros en el plano complejo. Código: \texttt{butterworth\_6kHz\_7kHz.m}}
+\end{figure}
+
+% --- PREGUNTA 10 ---
+\subsection{Sistemas físicos de orden superior como filtros}
+
+Los sistemas mecánicos y electrónicos de segundo orden o superior presentan comportamiento de filtrado selectivo en frecuencia. Se analizan implementaciones representativas para cada tipo de filtro.
+
+\subsubsection{Filtro pasabajos}
+
+\textbf{Sistema eléctrico:} Un circuito RLC serie con salida en el capacitor constituye un filtro pasabajos de segundo orden. La impedancia del capacitor disminuye con la frecuencia, permitiendo el paso de bajas frecuencias mientras atenúa las altas.
+
+La ecuación diferencial que describe el comportamiento del circuito, tomando la corriente como variable de estado, es:
+\begin{equation}
+L\frac{d^2i}{dt^2} + R\frac{di}{dt} + \frac{1}{C}i = \frac{1}{C}v_{in}(t)
+\end{equation}
+
+donde la tensión de salida es $v_{out} = i/C$. La función de transferencia resultante presenta la forma canónica de un filtro pasabajos de segundo orden con frecuencia natural $\omega_n = 1/\sqrt{LC}$ y factor de amortiguamiento $\zeta = R\sqrt{C/L}/2$.
+
+\textbf{Sistema mecánico:} Un sistema masa-resorte-amortiguador con entrada de fuerza y salida de posición exhibe características de pasabajos. A bajas frecuencias (excitaciones lentas), la masa sigue cuasi-estáticamente la fuerza aplicada. A altas frecuencias, la inercia de la masa impide el seguimiento, atenuando la respuesta.
+
+La ecuación de movimiento es:
+\begin{equation}
+M\frac{d^2x}{dt^2} + B\frac{dx}{dt} + Kx = F(t)
+\end{equation}
+
+con frecuencia natural $\omega_n = \sqrt{K/M}$ y amortiguamiento $\zeta = B/(2\sqrt{KM})$. Este sistema encuentra aplicación en suspensiones vehiculares y aisladores de vibración.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{0.9\textwidth}{\centering\vspace{3cm}[Placeholder: Diagramas de circuito RLC y sistema masa-resorte-amortiguador]\vspace{3cm}}}
+\caption{Implementaciones de filtros pasabajos: sistema eléctrico (RLC) y mecánico (masa-resorte-amortiguador)}
+\end{figure}
+
+\subsubsection{Filtro pasabanda}
+
+\textbf{Sistema eléctrico:} Un circuito RLC serie con salida en la resistencia implementa un filtro pasabanda. A la frecuencia de resonancia, la impedancia reactiva neta es nula y la corriente alcanza su máximo, resultando en máxima tensión en la resistencia.
+
+La ecuación diferencial del sistema es:
+\begin{equation}
+L\frac{d^2i}{dt^2} + R\frac{di}{dt} + \frac{1}{C}i = \frac{dv_{in}}{dt}
+\end{equation}
+
+donde $v_{out} = Ri$. La respuesta presenta un pico en $\omega_0 = 1/\sqrt{LC}$ con ancho de banda determinado por $Q = \omega_0 L/R$. Este principio se emplea en sintonizadores de radio y filtros de comunicaciones.
+
+\textbf{Sistema mecánico:} Un absorbedor dinámico de vibraciones, consistente en una masa secundaria conectada mediante resorte y amortiguador a un sistema primario, actúa como filtro pasabanda. El sistema responde máximamente en una banda de frecuencias cercana a su resonancia.
+
+Las ecuaciones acopladas del sistema son:
+\begin{align}
+M_1\ddot{x}_1 + (B_1+B_2)\dot{x}_1 + (K_1+K_2)x_1 - B_2\dot{x}_2 - K_2x_2 &= F(t) \\
+M_2\ddot{x}_2 + B_2(\dot{x}_2-\dot{x}_1) + K_2(x_2-x_1) &= 0
+\end{align}
+
+Este sistema se utiliza en control de vibraciones estructurales y supresión de resonancias.
+
+\subsubsection{Filtro pasaaltos}
+
+\textbf{Sistema eléctrico:} Un circuito RLC serie con salida en el inductor constituye un filtro pasaaltos. La impedancia del inductor aumenta con la frecuencia, permitiendo el paso preferencial de altas frecuencias.
+
+La ecuación diferencial es:
+\begin{equation}
+L\frac{d^2i}{dt^2} + R\frac{di}{dt} + \frac{1}{C}i = \frac{d^2v_{in}}{dt^2}
+\end{equation}
+
+con $v_{out} = L(di/dt)$. La función de transferencia presenta dos ceros en el origen, característica de un filtro pasaaltos de segundo orden.
+
+\textbf{Sistema mecánico:} Un acelerómetro sísmico implementa un filtro pasaaltos mecánico. La carcasa se conecta a la estructura monitoreada, mientras una masa interna suspendida por resorte y amortiguador responde a las aceleraciones. A bajas frecuencias, la masa sigue el movimiento de la carcasa; a altas frecuencias, la masa permanece relativamente estacionaria y el desplazamiento relativo indica la aceleración.
+
+La ecuación diferencial, en términos de desplazamiento relativo $z = x_{masa} - x_{base}$, es:
+\begin{equation}
+M\ddot{z} + B\dot{z} + Kz = -M\ddot{x}_{base}
+\end{equation}
+
+Este principio es fundamental en sensores de vibración y sistemas de navegación inercial.
+
+\subsubsection{Filtro supresabanda (notch)}
+
+\textbf{Sistema eléctrico:} Un circuito LC paralelo en serie con la carga implementa un filtro supresabanda. A la frecuencia de resonancia del tanque LC, su impedancia se hace infinita, bloqueando esa frecuencia específica.
+
+La ecuación del sistema, considerando el circuito LC paralelo con resistencia de carga $R_L$, resulta en:
+\begin{equation}
+LC\frac{d^3i}{dt^3} + \frac{L}{R_L}\frac{d^2i}{dt^2} + C\frac{di}{dt} + \frac{1}{R_L}i = \frac{d^2v_{in}}{dt^2} + \frac{1}{CR_L}\frac{dv_{in}}{dt}
+\end{equation}
+
+Este filtro se emplea para eliminar interferencias de frecuencia fija, como el rechazo de \SI{60}{\hertz} en instrumentación biomédica.
+
+\textbf{Sistema mecánico:} Un absorbedor de vibraciones sintonizado (tuned mass damper) suprime una frecuencia específica de vibración estructural. Cuando se sintoniza a la frecuencia problemática, el absorbedor vibra en contrafase, cancelando la vibración de la estructura principal.
+
+El sistema se describe mediante:
+\begin{align}
+M_s\ddot{x}_s + B_a(\dot{x}_s-\dot{x}_a) + K_a(x_s-x_a) &= F(t) \\
+M_a\ddot{x}_a + B_a(\dot{x}_a-\dot{x}_s) + K_a(x_a-x_s) &= 0
+\end{align}
+
+donde el subíndice $s$ denota la estructura y $a$ el absorbedor. Este sistema se implementa en edificios altos y puentes para mitigar oscilaciones inducidas por viento o tráfico.
+
+% ---------------------------
+% Resultados y análisis
+% ---------------------------
+\section{Resultados y análisis}
+
+Los resultados obtenidos en el proyecto demuestran la aplicación sistemática de técnicas de análisis y diseño de filtros analógicos. El estudio de filtros ideales confirmó su naturaleza no causal, con respuestas impulsivas que se extienden a tiempos negativos. Las simulaciones en MATLAB evidenciaron el fenómeno de Gibbs en las respuestas al paso, manifestándose como oscilaciones cerca de las discontinuidades con sobreimpulso de aproximadamente 9\%.
+
+Los filtros de primer y segundo orden diseñados para atenuar señales de \SI{60}{\hertz} y \SI{120}{\hertz} respectivamente proporcionaron atenuaciones efectivas. El filtro de primer orden logró \SI{-20}{\decibel} de atenuación a \SI{60}{\hertz} con una frecuencia de corte de \SI{6}{\hertz}, mientras que el filtro de segundo orden alcanzó más de \SI{-40}{\decibel} a \SI{120}{\hertz}. Los diagramas de Bode confirmaron las pendientes teóricas de \SI{-20}{\decibel\per\decade} y \SI{-40}{\decibel\per\decade} respectivamente. Las equivalencias con sistemas físicos RLC y masa-resorte-amortiguador demostraron la aplicabilidad práctica de estos diseños.
+
+El diseño de filtros Butterworth reveló la relación crítica entre especificaciones y orden del filtro. El primer caso, con banda de transición de \SI{3}{\kilo\hertz}, requirió orden 3, mientras que el segundo caso, con banda de transición de solo \SI{1}{\kilo\hertz}, necesitó orden 10. Esta diferencia ilustra el compromiso fundamental entre selectividad y complejidad de implementación. Ambos filtros cumplieron exitosamente las especificaciones de rizado en banda de paso y atenuación en banda de supresión. El análisis de polos confirmó la estabilidad de todos los diseños, con polos ubicados consistentemente en el semiplano izquierdo del plano complejo.
+
+La comparación entre los dos filtros Butterworth reveló que el filtro de orden 10 presenta mayor selectividad pero también mayor sensibilidad a tolerancias de componentes y mayor retardo de grupo. El filtro de orden 3 ofrece un balance más favorable entre desempeño y practicidad para la mayoría de aplicaciones. Los diagramas de Bode permitieron visualizar claramente estas diferencias, mostrando transiciones mucho más abruptas para el filtro de orden superior.
+
+El análisis de sistemas mecánicos y electrónicos como filtros demostró la universalidad de los conceptos de procesamiento de señales. Las analogías entre circuitos RLC y sistemas masa-resorte-amortiguador se extendieron a configuraciones más complejas como absorbedores dinámicos de vibraciones y filtros supresabanda. Esta perspectiva unificada facilita la transferencia de conocimientos entre dominios de ingeniería y sugiere soluciones innovadoras mediante analogías interdisciplinarias.
+
+% ---------------------------
+% Conclusiones
+% ---------------------------
+\section{Conclusiones}
+
+El desarrollo del proyecto permitió consolidar conocimientos fundamentales sobre análisis y diseño de filtros analógicos en el contexto de sistemas LTI. Se estableció que la fase lineal resulta crucial para preservar la forma de onda de señales, evitando distorsión temporal de diferentes componentes frecuenciales. Los sistemas con fase no lineal, aunque más comunes en implementaciones analógicas, requieren consideraciones especiales cuando la fidelidad de forma de onda es crítica.
+
+El retardo de grupo emerge como parámetro fundamental para caracterizar la distorsión introducida por filtros reales. Su variación con la frecuencia indica directamente la presencia de distorsión de fase. Para aplicaciones donde la preservación de envolventes de señal resulta esencial, como en comunicaciones y procesamiento de pulsos, filtros con retardo de grupo constante (tipo Bessel-Thomson) deben preferirse sobre filtros con mejor selectividad pero mayor distorsión de fase (tipo Butterworth o Chebyshev).
+
+Los diagramas de Bode se confirmaron como herramienta indispensable para análisis y diseño de filtros. La representación logarítmica simplifica significativamente la visualización de comportamiento en rangos amplios de frecuencia y facilita el análisis de sistemas en cascada. La capacidad de verificar visualmente el cumplimiento de especificaciones y estimar orden del filtro mediante pendientes asintóticas hace de los diagramas de Bode una técnica fundamental en ingeniería de sistemas.
+
+El diseño de filtros Butterworth demostró el compromiso inherente entre selectividad y complejidad. Especificaciones con bandas de transición estrechas requieren órdenes elevados, incrementando complejidad de implementación, sensibilidad a tolerancias y costos. En aplicaciones prácticas, resulta frecuentemente más efectivo relajar ligeramente las especificaciones para obtener implementaciones más robustas y económicas.
+
+Las equivalencias entre sistemas eléctricos y mecánicos proporcionan perspectiva valiosa para el diseño interdisciplinario. Los principios de filtrado se manifiestan universalmente en sistemas físicos diversos, desde circuitos electrónicos hasta suspensiones vehiculares y absorbedores de vibración estructural. Esta comprensión unificada enriquece el repertorio de soluciones disponibles para problemas de ingeniería y facilita la innovación mediante transferencia de conceptos entre dominios.
+
+La metodología de diseño sistemático implementada, partiendo de especificaciones, calculando orden necesario, determinando función de transferencia y verificando mediante simulación, proporciona un marco robusto aplicable a problemas reales de ingeniería. Las herramientas computacionales como MATLAB aceleran significativamente el proceso de diseño y permiten explorar rápidamente alternativas, aunque el entendimiento teórico profundo permanece esencial para interpretar resultados y tomar decisiones de diseño fundamentadas.
+
+% ---------------------------
+% Referencias
+% ---------------------------
+\section{Referencias}
+
+Butterworth, S. (1930). On the theory of filter amplifiers. \textit{Wireless Engineer}, \textit{7}(6), 536--541.
+
+Lyons, R. G. (2011). \textit{Understanding digital signal processing} (3rd ed.). Prentice Hall.
+
+Ogata, K. (2010). \textit{Modern control engineering} (5th ed.). Prentice Hall.
+
+Oppenheim, A. V., Willsky, A. S., \& Nawab, S. H. (1997). \textit{Signals and systems} (2nd ed.). Prentice Hall.
+
+Parks, T. W., \& Burrus, C. S. (1987). \textit{Digital filter design}. John Wiley \& Sons.
+
+Proakis, J. G., \& Manolakis, D. G. (2007). \textit{Digital signal processing: Principles, algorithms, and applications} (4th ed.). Pearson Prentice Hall.
+
+% ---------------------------
+% Anexos
+% ---------------------------
+\section*{Anexos}
+
+\subsection*{Código MATLAB}
+
+Los archivos de código desarrollados para el proyecto se encuentran disponibles en el directorio del proyecto:
+
+\begin{tblr}{
+  colspec = {l X[l]},
+  hlines,
+  vlines,
+  row{1} = {font=\bfseries},
+}
+Archivo & Descripción \\
+\texttt{filtros\_ideales.m} & Análisis de filtros pasabajos, pasabanda y pasaaltos ideales. Genera gráficas de respuestas impulsiva y al paso. \\
+\texttt{filtro\_primer\_orden\_60Hz.m} & Diseño de filtro pasabajos de primer orden para atenuar señal de 60 Hz. Incluye diagramas de Bode y análisis de polos. \\
+\texttt{filtro\_segundo\_orden\_120Hz.m} & Diseño de filtro pasabajos de segundo orden para atenuar señal de 120 Hz. Análisis de respuesta temporal y frecuencial. \\
+\texttt{butterworth\_3kHz\_6kHz.m} & Diseño de filtro Butterworth con especificaciones fp=3 kHz, fs=6 kHz, Rp=1 dB, As=16 dB. \\
+\texttt{butterworth\_6kHz\_7kHz.m} & Diseño de filtro Butterworth con especificaciones fp=6 kHz, fs=7 kHz, Rp=1.5 dB, As=18 dB. \\
+\end{tblr}
+
+\subsection*{Instrucciones de ejecución}
+
+Para ejecutar los scripts de MATLAB:
+
+\begin{enumerate}
+\item Abrir MATLAB y navegar al directorio del proyecto
+\item Ejecutar cada script individualmente mediante el comando \texttt{run('nombre\_archivo.m')} o presionando F5
+\item Las gráficas se generarán automáticamente y se guardarán en formato PNG
+\item Los resultados numéricos se mostrarán en la ventana de comandos
+\end{enumerate}
+
+Los scripts requieren MATLAB R2018b o superior con el Signal Processing Toolbox instalado. Cada archivo es autocontenido y puede ejecutarse independientemente.
+
+\subsection*{Ejemplo de código}
+
+A continuación se muestra un extracto representativo del código para el diseño de filtros Butterworth:
+
+\begin{lstlisting}[caption={Fragmento de código para cálculo de orden de filtro Butterworth}]
+% Especificaciones del filtro
+fp = 3000;  % Frecuencia de paso (Hz)
+fs = 6000;  % Frecuencia de supresión (Hz)
+Rp = 1;     % Rizado en banda de paso (dB)
+As = 16;    % Atenuación en banda de supresión (dB)
+
+wp = 2*pi*fp;  % Conversión a rad/s
+ws = 2*pi*fs;
+
+% Cálculo del orden del filtro
+numerador = log10((10^(As/10) - 1)/(10^(Rp/10) - 1));
+denominador = 2*log10(ws/wp);
+N_exacto = numerador / denominador;
+N = ceil(N_exacto);
+
+fprintf('Orden del filtro: N = %d\n', N);
+
+% Diseño del filtro
+[z, p, k] = buttap(N);  % Prototipo normalizado
+[num, den] = zp2tf(z, p, k);
+wc = wp / ((10^(Rp/10) - 1)^(1/(2*N)));
+[num_scaled, den_scaled] = lp2lp(num, den, wc);
+H = tf(num_scaled, den_scaled);
+
+% Diagramas de Bode
+bode(H);
+grid on;
+\end{lstlisting}
+
+\end{document}
