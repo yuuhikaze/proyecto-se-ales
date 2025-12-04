@@ -130,15 +130,29 @@ Para reemplazar los placeholders:
 REFERENCIAS ACADÉMICAS
 ----------------------
 
-El documento incluye referencias a:
-  - Oppenheim, Willsky & Nawab (1997) - Signals and Systems
-  - Ogata (2010) - Modern Control Engineering
-  - Butterworth (1930) - On the theory of filter amplifiers
-  - Lyons (2011) - Understanding Digital Signal Processing
-  - Parks & Burrus (1987) - Digital Filter Design
-  - Proakis & Manolakis (2007) - Digital Signal Processing
+El documento incluye 6 referencias verificadas en formato APA 7ma edición con sangría francesa:
 
-Todas las referencias están en formato APA 7ma edición.
+  1. Butterworth, S. (1930) - On the theory of filter amplifiers
+     Publicación original en Experimental Wireless and the Wireless Engineer, Vol. 7
+
+  2. Lyons, R. G. (2011) - Understanding Digital Signal Processing (3rd ed.)
+     ISBN: 978-0137027415, Prentice Hall
+
+  3. Ogata, K. (2010) - Modern Control Engineering (5th ed.)
+     ISBN: 978-0136156734, Prentice Hall
+
+  4. Oppenheim, A. V., Willsky, A. S., & Nawab, S. H. (1997)
+     Signals and Systems (2nd ed.)
+     ISBN: 978-0138147570, Prentice Hall
+
+  5. Parks, T. W., & Burrus, C. S. (1987) - Digital Filter Design
+     ISBN: 978-0471828969, John Wiley & Sons
+
+  6. Proakis, J. G., & Manolakis, D. G. (2007)
+     Digital Signal Processing: Principles, Algorithms, and Applications (4th ed.)
+     ISBN: 978-0131873742, Pearson Education
+
+Todas las fuentes fueron verificadas mediante búsqueda web y son publicaciones legítimas.
 
 
 NOTAS IMPORTANTES
